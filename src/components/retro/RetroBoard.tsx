@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RetroColumn } from "./RetroColumn";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { colors } from "@/lib/colors";
 
 interface RetroBoardProps {
   board: any;
@@ -79,10 +80,10 @@ export const RetroBoard = ({ board, sessionId }: RetroBoardProps) => {
       )
       .subscribe();
 
-    // Also set up a periodic refresh as backup
+    // Also set up a periodic refresh as backup (reduced to 2 seconds for better performance)
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ["cards", board.id] });
-    }, 5000);
+    }, 2000);
 
     return () => {
       console.log("Cleaning up real-time subscriptions");
@@ -124,22 +125,22 @@ const getDefaultColumns = (template: string) => {
   switch (template) {
     case "mad_sad_glad":
       return [
-        { id: "mad", title: "Mad", color: "hsl(var(--retro-red))" },
-        { id: "sad", title: "Sad", color: "hsl(var(--retro-yellow))" },
-        { id: "glad", title: "Glad", color: "hsl(var(--retro-green))" },
+        { id: "mad", title: "Mad", color: colors.semantic.retro.negative },
+        { id: "sad", title: "Sad", color: colors.semantic.retro.neutral },
+        { id: "glad", title: "Glad", color: colors.semantic.retro.positive },
       ];
     case "four_ls":
       return [
-        { id: "liked", title: "Liked", color: "hsl(var(--retro-green))" },
-        { id: "learned", title: "Learned", color: "hsl(var(--retro-blue))" },
-        { id: "lacked", title: "Lacked", color: "hsl(var(--retro-yellow))" },
-        { id: "longed", title: "Longed For", color: "hsl(var(--retro-purple))" },
+        { id: "liked", title: "Liked", color: colors.semantic.retro.positive },
+        { id: "learned", title: "Learned", color: colors.semantic.retro.neutral },
+        { id: "lacked", title: "Lacked", color: colors.semantic.retro.neutral },
+        { id: "longed", title: "Longed For", color: colors.semantic.retro.negative },
       ];
     default: // start_stop_continue
       return [
-        { id: "start", title: "Start", color: "hsl(var(--retro-green))" },
-        { id: "stop", title: "Stop", color: "hsl(var(--retro-red))" },
-        { id: "continue", title: "Continue", color: "hsl(var(--retro-blue))" },
+        { id: "start", title: "Start", color: colors.semantic.retro.positive },
+        { id: "stop", title: "Stop", color: colors.semantic.retro.negative },
+        { id: "continue", title: "Continue", color: colors.semantic.retro.neutral },
       ];
   }
 };

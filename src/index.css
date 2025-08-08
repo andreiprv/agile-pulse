@@ -2,65 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 
+ * Agile Pulse Design System
+ * 
+ * This file imports and applies the centralized color system from src/lib/colors.ts
+ * To change the color palette, edit src/lib/colors.ts - do not modify colors here.
+ * All colors are in HSL format for maximum flexibility.
+ * 
+ * Palette source: https://coolors.co/palette/000000-14213d-fca311-e5e5e5-ffffff
+ */
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core UI Colors - Managed by src/lib/colors.ts */
+    --background: 0 0% 100%;           /* White - Main background */
+    --foreground: 0 0% 0%;             /* Black - Main text */
+    --card: 0 0% 100%;                 /* White - Card backgrounds */
+    --card-foreground: 0 0% 0%;        /* Black - Card text */
+    --popover: 0 0% 100%;              /* White - Popover backgrounds */
+    --popover-foreground: 0 0% 0%;     /* Black - Popover text */
+    
+    /* Semantic UI Colors */
+    --primary: 216 69% 16%;            /* Navy - Primary buttons, main actions */
+    --primary-foreground: 0 0% 100%;   /* White - Text on primary elements */
+    --secondary: 0 0% 90%;             /* Light Gray - Secondary elements */
+    --secondary-foreground: 0 0% 0%;   /* Black - Text on secondary elements */
+    --muted: 0 0% 90%;                 /* Light Gray - Muted backgrounds */
+    --muted-foreground: 216 69% 16%;   /* Navy - Muted text */
+    --accent: 39 100% 54%;             /* Orange - Accent/highlight color */
+    --accent-foreground: 0 0% 0%;      /* Black - Text on accent elements */
+    
+    /* System Colors */
+    --destructive: 0 100% 50%;         /* Error red (not from palette - system color) */
+    --destructive-foreground: 0 0% 100%; /* White - Text on error elements */
+    --border: 0 0% 90%;                /* Light Gray - Borders */
+    --input: 0 0% 90%;                 /* Light Gray - Input backgrounds */
+    --ring: 39 100% 54%;               /* Orange - Focus rings */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Retrospective Semantic Colors */
+    --retro-positive: 39 100% 54%;     /* Orange - Positive actions (Start, Liked, Glad) */
+    --retro-neutral: 216 69% 16%;      /* Navy - Neutral actions (Continue, Learned, Sad) */
+    --retro-negative: 0 0% 0%;         /* Black - Negative actions (Stop, Lacked, Mad) */
+    --retro-highlight: 39 100% 54%;    /* Orange - Special highlights */
+    --retro-card-bg: 0 0% 100%;        /* White - Card backgrounds */
+    
+    /* Legacy Retro Colors (for backward compatibility) */
+    --retro-green: 39 100% 54%;        /* Mapped to Orange (positive) */
+    --retro-yellow: 216 69% 16%;       /* Mapped to Navy (neutral) */
+    --retro-red: 0 0% 0%;              /* Mapped to Black (negative) */
+    --retro-blue: 216 69% 16%;         /* Mapped to Navy */
+    --retro-purple: 0 0% 0%;           /* Mapped to Black */
+    --retro-orange: 39 100% 54%;       /* Original Orange */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 217.2 91.2% 59.8%;
-
-    /* Retrospective specific colors */
-    --retro-green: 134 61% 41%;
-    --retro-yellow: 48 96% 53%;
-    --retro-red: 0 84% 60%;
-    --retro-blue: 213 94% 68%;
-    --retro-purple: 262 83% 58%;
-    --retro-orange: 25 95% 53%;
-
+    /* Layout */
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar Colors */
+    --sidebar-background: 0 0% 100%;   /* White */
+    --sidebar-foreground: 0 0% 0%;     /* Black */
+    --sidebar-primary: 216 69% 16%;    /* Navy */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 0 0% 90%;        /* Light Gray */
+    --sidebar-accent-foreground: 0 0% 0%; /* Black */
+    --sidebar-border: 0 0% 90%;        /* Light Gray */
+    --sidebar-ring: 39 100% 54%;       /* Orange */
   }
 
   .dark {

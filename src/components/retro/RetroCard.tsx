@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Heart, MoreVertical, ArrowUp, Edit, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,7 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(card.content);
   const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
   
   const voteCount = card.votes?.length || 0;
   const hasVoted = card.votes?.some((vote: any) => vote.voter_session_id === sessionId);
@@ -44,16 +46,26 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
         if (error) throw error;
         toast.success("Vote removed");
       } else {
-        // Check if user has reached vote limit
-        const { data: userVotes } = await supabase
-          .from("votes")
-          .select("*")
-          .eq("voter_session_id", sessionId)
-          .in("card_id", await getUserCardIds(board.id));
+        // Check if user has reached vote limit (optimized query)
+        // Get all cards for this board first
+        const { data: boardCards } = await supabase
+          .from("retro_cards")
+          .select("id")
+          .eq("board_id", board.id);
 
-        if (userVotes && userVotes.length >= board.max_votes_per_user) {
-          toast.error(`You can only vote ${board.max_votes_per_user} times`);
-          return;
+        const cardIds = boardCards?.map(card => card.id) || [];
+        
+        if (cardIds.length > 0) {
+          const { count: userVoteCount } = await supabase
+            .from("votes")
+            .select("*", { count: "exact", head: true })
+            .eq("voter_session_id", sessionId)
+            .in("card_id", cardIds);
+
+          if (userVoteCount && userVoteCount >= board.max_votes_per_user) {
+            toast.error(`You can only vote ${board.max_votes_per_user} times`);
+            return;
+          }
         }
 
         // Add vote
@@ -96,6 +108,12 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
       return;
     }
 
+    // Optimistic update - remove card from UI immediately
+    const originalCards = queryClient.getQueryData(["cards", board.id]) as any[];
+    queryClient.setQueryData(["cards", board.id], (oldCards: any[] = []) => {
+      return oldCards.filter(c => c.id !== card.id);
+    });
+
     try {
       const { error } = await supabase
         .from("retro_cards")
@@ -106,6 +124,12 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
       toast.success("Card deleted");
     } catch (error) {
       console.error("Error deleting card:", error);
+      
+      // Revert optimistic update on error
+      if (originalCards) {
+        queryClient.setQueryData(["cards", board.id], originalCards);
+      }
+      
       toast.error("Failed to delete card");
     }
   };
@@ -130,7 +154,18 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
       return;
     }
 
+    const originalContent = card.content;
     setIsSaving(true);
+    
+    // Optimistic update - update UI immediately
+    queryClient.setQueryData(["cards", board.id], (oldCards: any[] = []) => {
+      return oldCards.map(c => 
+        c.id === card.id ? { ...c, content: editContent.trim() } : c
+      );
+    });
+    
+    setIsEditing(false);
+
     try {
       const { error } = await supabase
         .from("retro_cards")
@@ -139,10 +174,21 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
         .eq("author_session_id", sessionId); // Double-check ownership
 
       if (error) throw error;
-      setIsEditing(false);
       toast.success("Card updated");
     } catch (error) {
       console.error("Error updating card:", error);
+      
+      // Revert optimistic update on error
+      queryClient.setQueryData(["cards", board.id], (oldCards: any[] = []) => {
+        return oldCards.map(c => 
+          c.id === card.id ? { ...c, content: originalContent } : c
+        );
+      });
+      
+      // Restore editing state
+      setEditContent(originalContent);
+      setIsEditing(true);
+      
       toast.error("Failed to update card");
     } finally {
       setIsSaving(false);
@@ -198,7 +244,7 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
         
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-2">
-            {board.voting_enabled && (
+            {board.voting_enabled ? (
               <Button
                 onClick={handleVote}
                 variant={hasVoted ? "default" : "outline"}
@@ -208,6 +254,16 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
               >
                 <Heart className={`w-3 h-3 mr-1 ${hasVoted ? "fill-current" : ""}`} />
                 {board.show_votes ? voteCount : "Vote"}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="h-8 px-2 opacity-50"
+              >
+                <Heart className="w-3 h-3 mr-1" />
+                Voting Disabled
               </Button>
             )}
           </div>
@@ -255,12 +311,4 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
   );
 };
 
-// Helper function to get all card IDs for a board
-const getUserCardIds = async (boardId: string) => {
-  const { data } = await supabase
-    .from("retro_cards")
-    .select("id")
-    .eq("board_id", boardId);
-  
-  return data?.map(card => card.id) || [];
-};
+// Note: getUserCardIds helper function removed - now using inline optimized queries

@@ -14,7 +14,9 @@ import {
   Play,
   Pause,
   RotateCcw,
-  UserPlus
+  UserPlus,
+  Heart,
+  HeartOff
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -88,6 +90,21 @@ export const BoardHeader = ({ board, sessionId }: BoardHeaderProps) => {
     }
   };
 
+  const handleToggleVoting = async () => {
+    try {
+      const { error } = await supabase
+        .from("boards")
+        .update({ voting_enabled: !board.voting_enabled })
+        .eq("id", board.id);
+
+      if (error) throw error;
+      toast.success(board.voting_enabled ? "Voting stopped" : "Voting started!");
+      window.location.reload();
+    } catch (error) {
+      toast.error("Failed to toggle voting");
+    }
+  };
+
   const handleStartTimer = async () => {
     try {
       const duration = timerMinutes * 60;
@@ -139,6 +156,9 @@ export const BoardHeader = ({ board, sessionId }: BoardHeaderProps) => {
             )}
             {board.is_locked && (
               <Badge variant="destructive">Locked</Badge>
+            )}
+            {board.voting_enabled && (
+              <Badge variant="default" className="animate-pulse">Voting Active</Badge>
             )}
           </div>
 
@@ -227,6 +247,24 @@ export const BoardHeader = ({ board, sessionId }: BoardHeaderProps) => {
                 <>
                   <Lock className="w-4 h-4 mr-2" />
                   Lock
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={handleToggleVoting}
+              variant={board.voting_enabled ? "default" : "outline"}
+              size="sm"
+            >
+              {board.voting_enabled ? (
+                <>
+                  <HeartOff className="w-4 h-4 mr-2" />
+                  Stop Voting
+                </>
+              ) : (
+                <>
+                  <Heart className="w-4 h-4 mr-2" />
+                  Start Voting
                 </>
               )}
             </Button>

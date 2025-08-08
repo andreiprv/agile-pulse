@@ -51,6 +51,9 @@ const Index = () => {
           title: boardTitle.trim(),
           template: selectedTemplate,
           columns: [],
+          voting_enabled: false, // Default to voting disabled
+          show_votes: false,
+          is_locked: false,
         })
         .select()
         .single();

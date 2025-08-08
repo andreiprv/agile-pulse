@@ -19,6 +19,7 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Core UI colors using CSS custom properties
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -61,6 +62,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Agile Pulse semantic colors
+				retro: {
+					positive: 'hsl(var(--retro-positive))',
+					neutral: 'hsl(var(--retro-neutral))',
+					negative: 'hsl(var(--retro-negative))',
+					highlight: 'hsl(var(--retro-highlight))',
+					'card-bg': 'hsl(var(--retro-card-bg))',
+					// Legacy colors for backward compatibility
+					green: 'hsl(var(--retro-green))',
+					yellow: 'hsl(var(--retro-yellow))',
+					red: 'hsl(var(--retro-red))',
+					blue: 'hsl(var(--retro-blue))',
+					purple: 'hsl(var(--retro-purple))',
+					orange: 'hsl(var(--retro-orange))'
 				}
 			},
 			borderRadius: {

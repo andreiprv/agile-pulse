@@ -6,6 +6,7 @@ import { Plus, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RetroCard } from "./RetroCard";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface RetroColumnProps {
   column: {
@@ -22,27 +23,65 @@ export const RetroColumn = ({ column, board, cards, sessionId }: RetroColumnProp
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardContent, setNewCardContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleAddCard = async () => {
     if (!newCardContent.trim() || isSubmitting) return;
 
+    const optimisticCard = {
+      id: `temp-${Date.now()}`, // Temporary ID
+      content: newCardContent.trim(),
+      column_id: column.id,
+      board_id: board.id,
+      author_session_id: sessionId,
+      position: cards.length,
+      votes: [],
+      is_hidden: false,
+      created_at: new Date().toISOString(),
+    };
+
     setIsSubmitting(true);
+    
+    // Optimistic update - add card immediately to UI
+    queryClient.setQueryData(["cards", board.id], (oldCards: any[] = []) => {
+      return [...oldCards, optimisticCard];
+    });
+
+    // Clear form immediately for better UX
+    setNewCardContent("");
+    setIsAddingCard(false);
+
     try {
-      const { error } = await supabase.from("retro_cards").insert({
+      const { data, error } = await supabase.from("retro_cards").insert({
         board_id: board.id,
         column_id: column.id,
-        content: newCardContent.trim(),
+        content: optimisticCard.content,
         author_session_id: sessionId,
-        position: cards.length,
-      });
+        position: optimisticCard.position,
+      }).select().single();
 
       if (error) throw error;
 
-      setNewCardContent("");
-      setIsAddingCard(false);
+      // Replace optimistic card with real card data
+      queryClient.setQueryData(["cards", board.id], (oldCards: any[] = []) => {
+        return oldCards.map(card => 
+          card.id === optimisticCard.id ? { ...data, votes: [] } : card
+        );
+      });
+
       toast.success("Card added successfully!");
     } catch (error) {
       console.error("Error adding card:", error);
+      
+      // Remove optimistic card on error
+      queryClient.setQueryData(["cards", board.id], (oldCards: any[] = []) => {
+        return oldCards.filter(card => card.id !== optimisticCard.id);
+      });
+      
+      // Restore form state on error
+      setNewCardContent(optimisticCard.content);
+      setIsAddingCard(true);
+      
       toast.error("Failed to add card");
     } finally {
       setIsSubmitting(false);
