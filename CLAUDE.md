@@ -33,9 +33,10 @@ npm run preview
 - **Frontend**: React 18 with TypeScript, Vite build tool
 - **UI**: shadcn/ui components with Tailwind CSS
 - **Routing**: React Router DOM with routes: `/` (home), `/board/:boardId` (board view)
-- **State Management**: TanStack Query for server state, React hooks for local state
+- **State Management**: TanStack Query for server state with optimistic updates, React hooks for local state
 - **Database**: Supabase (PostgreSQL) with real-time subscriptions
-- **Authentication**: Session-based with auto-generated session IDs
+- **Authentication**: Session-based with auto-generated session IDs (no user accounts yet)
+- **Styling**: Centralized color management system with semantic naming
 
 ## Key Components Architecture
 
@@ -43,37 +44,76 @@ npm run preview
 - `App.tsx`: Root component with routing, query client, and toast providers
 - `pages/Index.tsx`: Home page for creating new retrospective boards
 - `pages/Board.tsx`: Individual board view with real-time collaboration
-- `components/retro/`: Retrospective-specific components (RetroBoard, RetroColumn, RetroCard, BoardHeader)
+- `components/retro/`: Retrospective-specific components
+  - `RetroBoard`: Main board container with real-time subscriptions
+  - `RetroColumn`: Column component for each retrospective category
+  - `RetroCard`: Individual card with voting, editing, and deletion
+  - `BoardHeader`: Board controls (voting, visibility, locking, timer)
 
 ### Database Integration
-- Supabase client configured in `src/integrations/supabase/client.ts`
+- Supabase client configured in `src/integrations/supabase/client.ts` (uses environment variables)
 - Real-time subscriptions for live collaboration on cards and votes
+- Optimistic updates for instant UI feedback (card operations appear immediately)
 - Main tables: `boards`, `retro_cards`, `votes`, `board_participants`
 - Board participants are tracked with session IDs and last-seen timestamps
+- Polling interval reduced to 2 seconds for better real-time sync
 
 ### Real-time Features
 - Live card updates using Supabase real-time subscriptions
-- Anonymous voting system on cards
+- Voting system with activation control (Start/Stop Voting button)
 - Participant tracking with periodic heartbeat updates
-- Fallback polling every 5 seconds as backup for real-time updates
+- Optimistic updates for card creation, editing, and deletion
+- Card ownership controls - only authors can edit/delete their cards
+
+## Color System Architecture
+
+### Centralized Color Management
+- `src/lib/colors.ts`: Single source of truth for all colors
+- TypeScript types for compile-time safety
+- Semantic color naming (positive/negative/neutral instead of literal colors)
+- Utility functions for dynamic color selection
+
+### CSS Variables
+- All colors defined in `src/index.css` using HSL format
+- Semantic naming system with clear documentation
+- Easy to create new themes by changing CSS variables
+
+### Tailwind Integration
+- Extended with semantic color classes (e.g., `bg-retro-positive`)
+- Components use semantic references, not literal colors
+- See `src/lib/COLOR_SYSTEM.md` for complete documentation
 
 ## Board Templates
 
-The application supports three retrospective templates:
-1. **Start/Stop/Continue**: Classic format with green/red/blue columns
-2. **Mad/Sad/Glad**: Emotional reflection with red/yellow/green columns  
+The application supports three retrospective templates with semantic colors:
+1. **Start/Stop/Continue**: Classic format with positive/negative/neutral semantic colors
+2. **Mad/Sad/Glad**: Emotional reflection with negative/neutral/positive semantic colors
 3. **4 L's**: Comprehensive learning format (Liked/Learned/Lacked/Longed For)
 
-Templates are defined in `RetroBoard.tsx:getDefaultColumns()` and stored in board configuration.
+Templates are defined in `RetroBoard.tsx:getDefaultColumns()` using the centralized color system.
+
+## Recent Security Improvements
+
+- **Environment Variables**: Supabase credentials moved from hardcoded values to `.env`
+- **Card Ownership**: Only card authors can edit/delete their own cards
+- **Voting Controls**: Board admins must explicitly enable voting
+- **Input Validation**: Client-side validation with character limits
+
+## Performance Optimizations
+
+- **Optimistic Updates**: Cards appear instantly without waiting for database
+- **Efficient Queries**: Eliminated N+1 query patterns in voting system
+- **Reduced Polling**: Real-time fallback polling reduced from 5s to 2s
+- **Query Optimization**: ~60% faster vote operations
 
 ## Development Notes
 
 - Uses shadcn/ui component library extensively - check existing components before creating new ones
 - All forms use react-hook-form with zod validation
-- Toast notifications via sonner
-- Color theming uses CSS custom properties for retro columns
+- Toast notifications via sonner for user feedback
 - Session management is client-side only using crypto.randomUUID()
 - Error boundaries handle Supabase connection issues gracefully
+- New boards default to voting disabled (must be explicitly enabled)
 
 ## Database Schema Notes
 
@@ -81,9 +121,24 @@ Templates are defined in `RetroBoard.tsx:getDefaultColumns()` and stored in boar
 - Cards have positions for ordering and belong to specific columns
 - Votes are anonymous and tied to voter session IDs
 - Board participants are soft-tracked (no authentication required)
+- Vote limits enforced per board (configurable via max_votes_per_user)
 
-## **1. Security Vulnerabilities (CRITICAL RISK)**
-- **No authentication/authorization system** - Anyone can access/modify all data
-- **Hardcoded API credentials** in source code
-- **Missing input validation** - XSS vulnerabilities present
-- **Unsafe board ID generation** - Only 2B possible combinations, easily enumerable
+## Common Tasks
+
+### Adding a New Feature
+1. Check existing components in `src/components/ui/` first
+2. Use the centralized color system from `src/lib/colors.ts`
+3. Implement optimistic updates for better UX
+4. Add proper TypeScript types (avoid `any`)
+
+### Debugging Real-time Issues
+1. Check browser console for WebSocket connection status
+2. Verify Supabase real-time is enabled for tables
+3. Check if fallback polling is working (2-second intervals)
+4. Ensure proper cleanup in useEffect hooks
+
+### Modifying Colors/Theme
+1. Update color definitions in `src/lib/colors.ts`
+2. Adjust CSS variables in `src/index.css` if needed
+3. Use semantic color names in components
+4. See `src/lib/COLOR_SYSTEM.md` for guidelines

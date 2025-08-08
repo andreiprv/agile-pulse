@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Users, Timer, Vote } from "lucide-react";
+import Navigation from "@/components/shared/Navigation";
 
-// Deprecated: Kept temporarily to avoid breaking imports if any
-const Index = () => {
+const CreateBoard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTemplate = searchParams.get("template") || "start_stop_continue";
+
   const [isCreating, setIsCreating] = useState(false);
   const [boardTitle, setBoardTitle] = useState("Sprint Retrospective");
-  const [selectedTemplate, setSelectedTemplate] = useState("start_stop_continue");
+  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate);
 
   const templates = [
     {
@@ -42,9 +45,8 @@ const Index = () => {
 
     setIsCreating(true);
     try {
-      // Generate a temporary board_id (will be overridden by the trigger)
       const tempBoardId = crypto.randomUUID().substring(0, 6).toUpperCase();
-      
+
       const { data, error } = await supabase
         .from("boards")
         .insert({
@@ -52,7 +54,7 @@ const Index = () => {
           title: boardTitle.trim(),
           template: selectedTemplate,
           columns: [],
-          voting_enabled: false, // Default to voting disabled
+          voting_enabled: false,
           show_votes: false,
           is_locked: false,
         })
@@ -73,13 +75,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <div className="container mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Sprint Retrospective Tool</h1>
+          <h1 className="text-4xl font-bold mb-4">Create a Retrospective</h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Create collaborative retrospective boards for your agile team
+            Choose a template and start collaborating instantly
           </p>
-          
+
           <div className="flex justify-center gap-8 mb-8">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
@@ -166,4 +169,6 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default CreateBoard;
+
+
