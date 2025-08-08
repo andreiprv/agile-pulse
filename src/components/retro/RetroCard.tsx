@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, MoreVertical, ArrowUp } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Heart, MoreVertical, ArrowUp, Edit, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -19,6 +20,9 @@ interface RetroCardProps {
 
 export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
   const [isVoting, setIsVoting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(card.content);
+  const [isSaving, setIsSaving] = useState(false);
   
   const voteCount = card.votes?.length || 0;
   const hasVoted = card.votes?.some((vote: any) => vote.voter_session_id === sessionId);
@@ -106,12 +110,91 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
     }
   };
 
+  const handleStartEdit = () => {
+    if (card.author_session_id !== sessionId) {
+      toast.error("You can only edit your own cards");
+      return;
+    }
+    setIsEditing(true);
+    setEditContent(card.content);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editContent.trim()) {
+      toast.error("Card content cannot be empty");
+      return;
+    }
+
+    if (card.author_session_id !== sessionId) {
+      toast.error("You can only edit your own cards");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("retro_cards")
+        .update({ content: editContent.trim() })
+        .eq("id", card.id)
+        .eq("author_session_id", sessionId); // Double-check ownership
+
+      if (error) throw error;
+      setIsEditing(false);
+      toast.success("Card updated");
+    } catch (error) {
+      console.error("Error updating card:", error);
+      toast.error("Failed to update card");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditContent(card.content);
+  };
+
   return (
     <Card className={`relative group transition-all duration-200 hover:shadow-md ${
       board.focus_card_id === card.id ? "ring-2 ring-primary" : ""
     } ${card.is_hidden ? "opacity-50" : ""}`}>
       <CardContent className="p-4">
-        <p className="text-sm leading-relaxed">{card.content}</p>
+        {isEditing ? (
+          <div className="space-y-3">
+            <Textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="min-h-[80px] resize-none text-sm"
+              maxLength={280}
+              disabled={isSaving}
+            />
+            <div className="text-xs text-muted-foreground text-right">
+              {editContent.length}/280
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSaveEdit}
+                size="sm"
+                disabled={!editContent.trim() || isSaving}
+                className="flex-1"
+              >
+                <Save className="w-3 h-3 mr-1" />
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                onClick={handleCancelEdit}
+                variant="outline"
+                size="sm"
+                disabled={isSaving}
+              >
+                <X className="w-3 h-3 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm leading-relaxed">{card.content}</p>
+        )}
         
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-2">
@@ -141,12 +224,22 @@ export const RetroCard = ({ card, board, sessionId }: RetroCardProps) => {
                 Convert to Action
               </DropdownMenuItem>
               {card.author_session_id === sessionId && (
-                <DropdownMenuItem 
-                  onClick={handleDeleteCard}
-                  className="text-destructive"
-                >
-                  Delete Card
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem 
+                    onClick={handleStartEdit}
+                    disabled={isEditing || board.is_locked}
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Card
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleDeleteCard}
+                    className="text-destructive"
+                    disabled={isEditing}
+                  >
+                    Delete Card
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
