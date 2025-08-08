@@ -1,73 +1,125 @@
-# Welcome to your Lovable project
+# Agile Pulse - Sprint Retrospective Tool
 
-## Project info
+A modern, real-time collaborative retrospective board application for agile teams. Create anonymous retrospective sessions with multiple templates, real-time voting, and instant collaboration.
 
-**URL**: https://lovable.dev/projects/cf986876-7afb-4524-80b2-962959f922dc
+## Features
 
-## How can I edit this code?
+✨ **Real-time Collaboration** - Multiple team members can contribute simultaneously  
+🗳️ **Anonymous Voting** - Vote on cards with activation controls  
+📱 **Responsive Design** - Works seamlessly on desktop and mobile  
+🎯 **Multiple Templates** - Start/Stop/Continue, Mad/Sad/Glad, 4 L's formats  
+⚡ **Optimistic Updates** - Instant UI feedback for smooth experience  
+🔒 **Card Ownership** - Only authors can edit their own cards  
+🎨 **Modern UI** - Clean design with semantic color system  
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI**: shadcn/ui components + Tailwind CSS
+- **Database**: Supabase (PostgreSQL) with real-time subscriptions
+- **State**: TanStack Query with optimistic updates
+- **Routing**: React Router DOM
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cf986876-7afb-4524-80b2-962959f922dc) and start prompting.
+## Quick Start
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ and npm
+- Supabase account (for database)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd agile-pulse-room
 
-Follow these steps:
+# Install dependencies
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Set up environment variables
+cp .env.example .env
+# Add your Supabase credentials to .env
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file with your Supabase credentials:
 
-**Use GitHub Codespaces**
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Available Scripts
 
-## What technologies are used for this project?
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-This project is built with:
+## How It Works
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. **Create a Board** - Choose from multiple retrospective templates
+2. **Share the Link** - Team members join using the board URL
+3. **Add Cards** - Contributors add anonymous cards to columns
+4. **Start Voting** - Enable voting when ready to prioritize
+5. **Discuss Results** - Focus on highest-voted items
 
-## How can I deploy this project?
+## Templates
 
-Simply open [Lovable](https://lovable.dev/projects/cf986876-7afb-4524-80b2-962959f922dc) and click on Share -> Publish.
+- **Start/Stop/Continue** - Classic retrospective format
+- **Mad/Sad/Glad** - Emotional reflection approach  
+- **4 L's** - Liked, Learned, Lacked, Longed For
 
-## Can I connect a custom domain to my Lovable project?
+## Security Features
 
-Yes, you can!
+- Environment-based configuration (no hardcoded secrets)
+- Card ownership controls
+- Server-side vote limit enforcement
+- Input validation and sanitization
+- Row Level Security (RLS) policies
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Performance Optimizations
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- Optimistic UI updates for instant feedback
+- Efficient real-time subscriptions
+- Minimal re-renders with smart caching
+- Database query optimization
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Architecture
+
+The application follows a clean architecture pattern:
+
+- `src/pages/` - Route components (Landing, CreateBoard, Board)
+- `src/components/` - Reusable UI components
+- `src/components/retro/` - Retrospective-specific components
+- `src/lib/` - Utilities and configurations
+- `src/integrations/` - External service integrations
+- `supabase/` - Database migrations and schema
+
+## Database Schema
+
+- **boards** - Retrospective board configurations
+- **retro_cards** - Individual cards with content and metadata
+- **votes** - Anonymous votes tied to session IDs
+- **board_participants** - Active participant tracking
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+For questions or issues, please open a GitHub issue or check the documentation in `CLAUDE.md` for development guidance.

@@ -32,7 +32,7 @@ npm run preview
 
 - **Frontend**: React 18 with TypeScript, Vite build tool
 - **UI**: shadcn/ui components with Tailwind CSS
-- **Routing**: React Router DOM with routes: `/` (home), `/board/:boardId` (board view)
+- **Routing**: React Router DOM with routes: `/` (landing), `/create` (board creation), `/board/:boardId` (board view)
 - **State Management**: TanStack Query for server state with optimistic updates, React hooks for local state
 - **Database**: Supabase (PostgreSQL) with real-time subscriptions
 - **Authentication**: Session-based with auto-generated session IDs (no user accounts yet)
@@ -42,8 +42,11 @@ npm run preview
 
 ### Application Structure
 - `App.tsx`: Root component with routing, query client, and toast providers
-- `pages/Index.tsx`: Home page for creating new retrospective boards
+- `pages/Landing.tsx`: Marketing landing page with feature highlights
+- `pages/CreateBoard.tsx`: Board creation page with template selection
+- `pages/Index.tsx`: Deprecated (kept for compatibility)
 - `pages/Board.tsx`: Individual board view with real-time collaboration
+- `components/shared/Navigation.tsx`: Consistent header navigation across pages
 - `components/retro/`: Retrospective-specific components
   - `RetroBoard`: Main board container with real-time subscriptions
   - `RetroColumn`: Column component for each retrospective category
@@ -98,6 +101,7 @@ Templates are defined in `RetroBoard.tsx:getDefaultColumns()` using the centrali
 - **Card Ownership**: Only card authors can edit/delete their own cards
 - **Voting Controls**: Board admins must explicitly enable voting
 - **Input Validation**: Client-side validation with character limits
+- **Server-side Vote Limits**: Database-enforced vote caps via triggers (default 3 votes per user)
 
 ## Performance Optimizations
 
@@ -122,6 +126,7 @@ Templates are defined in `RetroBoard.tsx:getDefaultColumns()` using the centrali
 - Votes are anonymous and tied to voter session IDs
 - Board participants are soft-tracked (no authentication required)
 - Vote limits enforced per board (configurable via max_votes_per_user)
+- Server-side vote constraint prevents duplicate votes and enforces limits via database triggers
 
 ## Common Tasks
 
