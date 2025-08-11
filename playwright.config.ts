@@ -11,6 +11,8 @@ export default defineConfig({
     baseURL: 'http://localhost:8080',
     trace: 'on-first-retry',
   },
+  // Continue running tests even if some fail
+  maxFailures: process.env.CI ? undefined : 0, // 0 means no limit on failures
   projects: [
     {
       name: 'chromium',
