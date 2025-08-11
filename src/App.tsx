@@ -7,6 +7,9 @@ import Landing from "./pages/Landing";
 import CreateBoard from "./pages/CreateBoard";
 import Board from "./pages/Board";
 import NotFound from "./pages/NotFound";
+import { SignIn } from "./pages/SignIn";
+import { SignUp } from "./pages/SignUp";
+import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -18,8 +21,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/create" element={<CreateBoard />} />
-          <Route path="/board/:boardId" element={<Board />} />
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/create" element={<CreateBoard />} />
+            <Route path="/board/:boardId" element={<Board />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

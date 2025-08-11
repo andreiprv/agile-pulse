@@ -1,3 +1,4 @@
+
 import { Users, Vote, Layout } from "lucide-react";
 
 export const landingContent = {
