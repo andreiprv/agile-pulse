@@ -74,6 +74,13 @@ export class AuthPage {
     await this.submitForm();
   }
 
+  async signOut() {
+    // Clear browser storage to simulate sign out
+    await this.clearBrowserStorage();
+    // Navigate to home page after sign out
+    await this.page.goto('/');
+  }
+
   // Assertion methods
   async expectToBeOnHomePage() {
     await expect(this.page).toHaveURL(AUTH_ROUTES.home);
